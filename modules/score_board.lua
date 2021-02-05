@@ -2,7 +2,7 @@
 --  File:    /LUA/modules/UI/game/score.lua
 --  Author:  Chris Blackwell, HUSSAR
 --  Summary: Supreme Score Board in Game/Replay Sessions (see mod_info.lua for details)
---  Copyright © 2005 Gas Powered Games, Inc. All rights reserved.
+--  Copyright Â© 2005 Gas Powered Games, Inc. All rights reserved.
 -- ##########################################################################################
 --  NOTE:    Contact HUSSAR, in case you are trying to 
 --           implement/port this mod to latest version of FAF patch
@@ -70,6 +70,7 @@ local issuedNoRushWarning = false
 local gameSpeed = 0
 local needExpand = false
 local contractOnCreate = false
+local showResourceStorage = false
  
 -- added configuration variables 
 local boardMargin = 20
@@ -107,24 +108,32 @@ local cid = 1
 -- this table is used for matching bright text color with color of an army and
 -- order of colors in this table determines priority for selecting team colors
 local Colors = { }
-Colors[cid] = {armyColor = 'ff40bf40', textColor = 'ff40bf40'} cid=cid+1 -- #ff40bf40 mid green
-Colors[cid] = {armyColor = 'ff436eee', textColor = 'ff70b5f3'} cid=cid+1 -- #ff70b5f3 new blue 
-Colors[cid] = {armyColor = 'fffafa00', textColor = 'ffffff42'} cid=cid+1 -- #ffffff42 new yellow
-Colors[cid] = {armyColor = 'ffff873e', textColor = 'FFF17224'} cid=cid+1 -- #FFF17224 orange (Nomads)
-Colors[cid] = {armyColor = 'ff9161ff', textColor = 'FFAE8AFF'} cid=cid+1 -- #FFAE8AFF purple
-Colors[cid] = {armyColor = 'ffe80a0a', textColor = 'FFFF3434'} cid=cid+1 -- #FFFF3434 Cybran red ff3f15
-Colors[cid] = {armyColor = 'ffffffff', textColor = 'ffffffff'} cid=cid+1 -- #ffffffff white
-Colors[cid] = {armyColor = 'ff66ffcc', textColor = 'ff66ffcc'} cid=cid+1 -- #ff66ffcc aqua
-Colors[cid] = {armyColor = 'ffff32ff', textColor = 'ffff32ff'} cid=cid+1 -- #ffff32ff fuschia pink
-Colors[cid] = {armyColor = 'ffff88ff', textColor = 'ffff88ff'} cid=cid+1 -- #ffff88ff light pink
-Colors[cid] = {armyColor = 'ffffbf80', textColor = 'ffffbf80'} cid=cid+1 -- #ffffbf80 light orange
-Colors[cid] = {armyColor = 'ffb76518', textColor = 'ffe17d22'} cid=cid+1 -- #ffe17d22 new brown
-Colors[cid] = {armyColor = 'ff2e8b57', textColor = 'ff3db874'} cid=cid+1 -- #ff3db874 dark new green
-Colors[cid] = {armyColor = 'ff131cd3', textColor = 'ff545bef'} cid=cid+1 -- #ff545bef dark UEF blue
-Colors[cid] = {armyColor = 'ff901427', textColor = 'ffe12b46'} cid=cid+1 -- #ffe12b46 dark red
-Colors[cid] = {armyColor = 'ff5f01a7', textColor = 'FFA946F4'} cid=cid+1 -- #FFA946F4 dark purple
-Colors[cid] = {armyColor = 'ff2f4f4f', textColor = 'ff5a9898'} cid=cid+1 -- #ff5a9898 dark green (olive)
-Colors[cid] = {armyColor = 'ff616d7e', textColor = 'ff99a3b0'} cid=cid+1 -- #ff99a3b0 grey
+Colors[cid] = {armyColor = 'ff40bf40', textColor = 'ff40bf40'} cid=cid+1 --#ff40bf40 #ff40bf40  mid green
+Colors[cid] = {armyColor = 'fffafa00', textColor = 'ffffff42'} cid=cid+1 --#fffafa00 #ffffff42  new yellow
+Colors[cid] = {armyColor = 'ff9161ff', textColor = 'FFA946F4'} cid=cid+1 --#ff9161ff #FFA946F4  purple
+Colors[cid] = {armyColor = 'ffe80a0a', textColor = 'FFF73C3C'} cid=cid+1 --#ffe80a0a #FFF73C3C  Cybran red ff3f15
+Colors[cid] = {armyColor = 'ff436eee', textColor = 'FF6184EF'} cid=cid+1 --#ff436eee #FF6184EF  new blue 
+Colors[cid] = {armyColor = 'ffffffff', textColor = 'ffffffff'} cid=cid+1 --#ffffffff #ffffffff  white
+Colors[cid] = {armyColor = 'ffff32ff', textColor = 'ffff32ff'} cid=cid+1 --#ffff32ff #ffff32ff  fuschia pink
+Colors[cid] = {armyColor = 'ffff873e', textColor = 'FFF17224'} cid=cid+1 --#ffff873e #FFF17224  orange (Nomads)
+Colors[cid] = {armyColor = 'ff66ffcc', textColor = 'ff66ffcc'} cid=cid+1 --#ff66ffcc #ff66ffcc  aqua
+
+Colors[cid] = {armyColor = 'ff76a101', textColor = 'ff76a101'} cid=cid+1 --#ff76a101 #ff76a101  Order Green (old)
+Colors[cid] = {armyColor = 'ff9fd802', textColor = 'ff9fd802'} cid=cid+1 --#ff9fd802 #ff9fd802  Order Green (new)
+Colors[cid] = {armyColor = 'ffffbf80', textColor = 'ffffbf80'} cid=cid+1 --#ffffbf80 #ffffbf80  light orange
+Colors[cid] = {armyColor = 'ff2e8b57', textColor = 'ff3db874'} cid=cid+1 --#ff2e8b57 #ff3db874  dark new green
+Colors[cid] = {armyColor = 'ffff88ff', textColor = 'ffff88ff'} cid=cid+1 --#ffff88ff #ffff88ff  light pink
+Colors[cid] = {armyColor = 'ffb76518', textColor = 'ffe17d22'} cid=cid+1 --#ffb76518 #ffe17d22  new brown
+Colors[cid] = {armyColor = 'ffa79602', textColor = 'ffa79602'} cid=cid+1 --#ffa79602 #ffa79602  Sera golden
+Colors[cid] = {armyColor = 'ff901427', textColor = 'FFCB2D44'} cid=cid+1 --#ff901427 #FFCB2D44  dark red 
+Colors[cid] = {armyColor = 'ff5f01a7', textColor = 'FF8C38CB'} cid=cid+1 --#ff5f01a7 #FF8C38CB  dark purple
+Colors[cid] = {armyColor = 'ff2f4f4f', textColor = 'FF549090'} cid=cid+1 --#ff2f4f4f #FF549090  dark green (olive)
+Colors[cid] = {armyColor = 'ff616d7e', textColor = 'ff99a3b0'} cid=cid+1 --#ff616d7e #ff99a3b0  gray
+Colors[cid] = {armyColor = 'ff616d7e', textColor = 'ff99a3b0'} cid=cid+1 --#ff616d7e #ff99a3b0  gray
+Colors[cid] = {armyColor = 'ff131cd3', textColor = 'FF4848DC'} cid=cid+1 --#ff131cd3 #FF4848DC  dark UEF blue (old)
+Colors[cid] = {armyColor = 'FF2929e1', textColor = 'FF4848DC'} cid=cid+1 --#FF2929e1 #FF4848DC  dark UEF blue (new)
+
+--WARN('SSB color fix Colors=' .. table.getsize(Colors))
 
 -- initializes Stats to store info about players' armies and aggregated armies (teams)
 function InitializeStats()
@@ -142,7 +151,7 @@ function InitializeStats()
     Stats.ai  = ScoreMng.GetInfoForAI()
     
     local armies = GetArmiesTable().armiesTable
-      
+    -- table.print(armies, 'armiesTable')
     --log.Table(sessionInfo, 'sessionInfo') 
     --log.Table(__active_mods, 'active_mods')
     --log.Table(allArmies, 'armies') 
@@ -209,7 +218,7 @@ function InitializeStats()
                 Stats.teamsCount = Stats.teamsCount + 1
                 -- save team info for each player's army
                 for _, armyID in team.members.ids do
-                    Stats.armies[armyID].txtColor = team.txtColor 
+                    Stats.armies[armyID].txtColor = team.txtColor or 'FFFFFF' --#FFFFFF
                 end
             end
         end
@@ -341,7 +350,7 @@ function CreateScoreUI(parent)
     if sessionReplay then
         boardWidth = 415 --340 -- 380  
     else 
-        boardWidth = boardWidth + 40  --280
+        boardWidth = boardWidth + 90  --280
     end    
     controls.bgTop.Width:Set(boardWidth + boardMargin)
     controls.bgBottom.Width:Set(boardWidth + boardMargin)
@@ -433,7 +442,7 @@ function CreateScoreUI(parent)
     end
     --controls.collapseArrow:SetCheck(true, true)
     controls.collapseArrow:SetCheck(false, false)
-    
+
 end
 
 function SetLayout()
@@ -616,65 +625,81 @@ function CreateArmyLine(armyID, army)
     group.nameColumn:SetColor(textColor)
     LayoutHelpers.AtLeftIn(group.nameColumn, group, position)
     LayoutHelpers.AtVerticalCenterIn(group.nameColumn, group)
-    
-    if isPlayerArmy and isSharing and not sessionReplay then
+    if isPlayerArmy and not sessionReplay then
         local tip = ''
         position = iconSize * 3   -- offset score column
         group.shareUnitsIcon = CreateInfoIcon(group, 'units.total.dds')
-        --group.shareUnitsIcon:SetTexture(modTextures..'units.total.dds')
-        LayoutHelpers.AtRightIn(group.shareUnitsIcon, group, position)
-        LayoutHelpers.AtVerticalCenterIn(group.shareUnitsIcon, group)
-        group.shareUnitsIcon.Height:Set(iconSize)
-        group.shareUnitsIcon.Width:Set(iconSize)
-        group.shareUnitsIcon.armyID = armyID
-        group.shareUnitsIcon.OnClick = function(self, eventModifiers)
+        if GetFocusArmy() ~= armyID then
+            LayoutHelpers.AtRightIn(group.shareUnitsIcon, group, position)
+            LayoutHelpers.AtVerticalCenterIn(group.shareUnitsIcon, group)
+            group.shareUnitsIcon.Height:Set(iconSize)
+            group.shareUnitsIcon.Width:Set(iconSize)
+            group.shareUnitsIcon.armyID = armyID
+            group.shareUnitsIcon.OnClick = function(self, eventModifiers)
             if eventModifiers.Right then 
-                 Diplomacy.RequestUnits(self.armyID) 
-             elseif eventModifiers.Shift then 
-                 Diplomacy.SendUnits(self.armyID, true) -- share all units
-             elseif not eventModifiers.Shift then 
-                 Diplomacy.SendUnits(self.armyID, false) -- share selected units
-             end         
-        end 
-        Tooltip.AddControlTooltip(group.shareUnitsIcon, str.tooltip('share_units'))
-        
+                    Diplomacy.RequestUnits(self.armyID) 
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendUnits(self.armyID, true) -- share all units
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendUnits(self.armyID, false) -- share selected units
+                end         
+            end 
+            Tooltip.AddControlTooltip(group.shareUnitsIcon, str.tooltip('share_units'))
+        end
+
         position = position + iconSize + 2
         group.shareEngyIcon = CreateInfoIcon(group, 'eco.engyIncome.dds')
-        --group.shareEngyIcon:SetTexture(modTextures..'eco.engyIncome.dds')
         LayoutHelpers.AtRightIn(group.shareEngyIcon, group, position)
         LayoutHelpers.AtVerticalCenterIn(group.shareEngyIcon, group)
         group.shareEngyIcon.Height:Set(iconSize)
         group.shareEngyIcon.Width:Set(iconSize)
         group.shareEngyIcon.armyID = armyID
-        group.shareEngyIcon.OnClick = function(self, eventModifiers)
-            if eventModifiers.Right then 
-                Diplomacy.RequestResource(self.armyID, 'energy')
-            elseif eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 0, 100) -- Share 100% energy
-            elseif not eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 0, 50) -- Share 50% energy
-            end 
-        end 
-        Tooltip.AddControlTooltip(group.shareEngyIcon, str.tooltip('share_engy'))
-        
-        position = position + iconSize + 3
+
+        position = position + iconSize + 2
+        group.engyColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
+        group.engyColumn:DisableHitTest()
+        group.engyColumn:SetColor(textColorEngy)
+        LayoutHelpers.AtRightIn(group.engyColumn, group, position)
+        LayoutHelpers.AtVerticalCenterIn(group.engyColumn, group)
+
+        position = position + 40
         group.shareMassIcon = CreateInfoIcon(group, 'eco.massIncome.dds')
-        --group.shareMassIcon:SetTexture(modTextures..'eco.massIncome.dds')
         LayoutHelpers.AtRightIn(group.shareMassIcon, group, position)
         LayoutHelpers.AtVerticalCenterIn(group.shareMassIcon, group)
         group.shareMassIcon.Height:Set(iconSize)
         group.shareMassIcon.Width:Set(iconSize)
         group.shareMassIcon.armyID = armyID
-        group.shareMassIcon.OnClick = function(self, eventModifiers)
-            if eventModifiers.Right then 
-                Diplomacy.RequestResource(self.armyID, 'mass')
-            elseif eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 100, 0) -- Share 100% mass
-            elseif not eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 50, 0) -- Share 50% mass
+
+        if GetFocusArmy() ~= armyID then
+            group.shareEngyIcon.OnClick = function(self, eventModifiers)
+                if eventModifiers.Right then 
+                    Diplomacy.RequestResource(self.armyID, 'energy')
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 0, 100) -- Share 100% energy
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 0, 50) -- Share 50% energy
+                end 
+            end 
+            Tooltip.AddControlTooltip(group.shareEngyIcon, str.tooltip('share_engy'))
+
+            group.shareMassIcon.OnClick = function(self, eventModifiers)
+                if eventModifiers.Right then 
+                    Diplomacy.RequestResource(self.armyID, 'mass')
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 100, 0) -- Share 100% mass
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 50, 0) -- Share 50% mass
+                end
             end
+            Tooltip.AddControlTooltip(group.shareMassIcon, str.tooltip('share_mass'))
         end
-        Tooltip.AddControlTooltip(group.shareMassIcon, str.tooltip('share_mass'))
+
+        position = position + iconSize + 2
+        group.massColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
+        group.massColumn:DisableHitTest()
+        group.massColumn:SetColor(textColorMass)
+        LayoutHelpers.AtRightIn(group.massColumn, group, position)
+        LayoutHelpers.AtVerticalCenterIn(group.massColumn, group)
     end
 
     -- create score data column
@@ -702,7 +727,7 @@ function CreateArmyLine(armyID, army)
         --group.nameColumn.Right:Set(position - sw)
         group.nameColumn:SetClipToWidth(true)
     end
-    
+
     -- TODO figure out if it is possible to ACCESS and show info about allied players in Sim mod!
     -- show more player's info only in Replay session 
     if ((isPlayerArmy or isTeamArmy) and sessionReplay) then
@@ -805,7 +830,13 @@ function CreateArmyLine(armyID, army)
             end
         end
     else    
-        group:DisableHitTest()
+        group.HandleEvent = function(self, event)
+            if event.Type == 'MouseEnter' then
+                showResourceStorage = true
+            elseif event.Type == 'MouseExit' then
+                showResourceStorage = false
+            end
+        end
     end
     
     return group
@@ -1629,10 +1660,10 @@ function CreateTeam(armyIndex, armies)
             -- use first player's color as team's color 
             if (team.key == '') then team.color = army.color end
             
-            -- build unique key for the team using id of allied players            
+            -- build unique key for the team using id of allied players
             team.key = team.key..armyID
             team.rating.actual = team.rating.actual + army.rating.actual
-            team.quadrant = math.min(team.quadrant, Stats.map.quadrants[army.name])
+            team.quadrant = math.min(team.quadrant, Stats.map.quadrants[army.name] or 4)
 
             table.insert(team.members.ids, armyID)
             table.insert(team.colors, army.color)
@@ -1709,6 +1740,8 @@ function GetMapData(sessionInfo)
             end
         end
     end
+    
+    table.print(map.quadrants, 'SSB map.quadrants')
     --table.print(saveData, 'saveData')
     
     return map
@@ -1843,6 +1876,14 @@ function UpdateUnitStats(player, scoreData)
     --end
 
 end
+
+
+
+
+
+
+
+
 function UpdatePlayerStats(armyID, armies, scoreData)
     local player = Stats.armies[armyID]
     --LOG(player.nameshort  .. ' units.bps = ' .. table.getsize(player.units.bps))
@@ -1859,6 +1900,11 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     if not scoreData.general.score then log.Warning('UpdatePlayerStats scoreData.general.score is nil' ) end
     
     player.dead = armies[armyID].outOfGame --or num.init(scoreData.general.currentunits.count) == 0
+    if not sessionReplay then
+		player.ally = IsAlly(GetFocusArmy(), armyID)    
+    else 
+        player.ally = true
+    end
       
     -- for dead/alive players, get only some score info 
     player.score = num.init(scoreData.general.score)
@@ -1913,7 +1959,8 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     else
         player.eco.massIncome = num.init(scoreData.resources.massin.rate)   * 10 -- per game ticks
         player.eco.engyIncome = num.init(scoreData.resources.energyin.rate) * 10 -- per game ticks
-        
+        player.eco.massStored = num.init(scoreData.resources.storage.storedMass)
+        player.eco.engyStored = num.init(scoreData.resources.storage.storedEnergy)
         UpdateUnitStats(player, scoreData)
         
         -- show announcements about built experimental units  
@@ -1964,6 +2011,9 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     
 
     --Stats.armies[armyID] = player
+	
+
+
 
     return player
 end
@@ -2030,7 +2080,7 @@ function UpdateTeamColor(team, armies)
     
     -- log.Trace('UpdateTeamColor  '..team.key)
     team.colorChanged = false
-    
+
     -- TODO improve logic so that there is no need for color searching
     for _, item in Colors do 
         for _,armyID in team.members.ids do
@@ -2223,6 +2273,8 @@ function KillArmyLine(line)
     if line.shareUnitsIcon then line.shareUnitsIcon:Hide() end
     if line.shareMassIcon then  line.shareMassIcon:Hide()  end
     if line.shareEngyIcon then  line.shareEngyIcon:Hide()  end
+    if line.massColumn then  line.massColumn:Hide()  end
+    if line.engyColumn then  line.engyColumn:Hide()  end
                        
     if sessionReplay then
         line.totalColumn:SetColor(armyColorDefeted)
@@ -2254,6 +2306,22 @@ currentScores = {}
 function Update(newScoreData)
     currentScores = table.deepcopy(newScoreData)
     --import(modPath .. 'modules/score_manager.lua').SetScoreData(currentScores)
+end
+
+function ShowEconomyColumns(line)
+    line.shareUnitsIcon:Show()
+    line.shareEngyIcon:Show()
+    line.shareMassIcon:Show()
+    line.massColumn:Show()
+    line.engyColumn:Show()
+end
+
+function HideEconomyColumns(line) 
+    line.shareUnitsIcon:Hide()
+    line.shareEngyIcon:Hide()
+    line.shareMassIcon:Hide()
+    line.massColumn:Hide()
+    line.engyColumn:Hide()
 end
 
 local initalBeats = true
@@ -2308,7 +2376,7 @@ function _OnBeat()
            -- skip lines without players or dead players
            local armyID = line.armyID
            local data = currentScores[armyID]  
-           
+
            local player = {}
            -- Stats must be updated even for dead players so that team Stats are accurate 
            if line.isArmyLine and data then
@@ -2321,18 +2389,29 @@ function _OnBeat()
                end 
            elseif line.isArmyLine and data then
                   
-               if sessionReplay then
-                   if data.resources.massin.rate then
-                       line.totalColumn:SetText(GetStatsForArmy(player, Columns.Total.Active))
-                       line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
-                       line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
-                       line.unitColumn:SetText(GetStatsForArmy(player, Columns.Units.Active))
-                   end
-               else
-                   -- TODO show Stats of team-mates in game session!
-                   -- this will require change in FAF sync/share files 
-                   -- because these Stats are not shared at this moment in UI mods
-               end
+                if sessionReplay then
+                    if data.resources.massin.rate then
+                        line.totalColumn:SetText(GetStatsForArmy(player, Columns.Total.Active))
+                        line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
+                        line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                        line.unitColumn:SetText(GetStatsForArmy(player, Columns.Units.Active))
+                    end
+                else
+                    if player.ally then
+                        ShowEconomyColumns(line)
+                    else 
+                        HideEconomyColumns(line)
+                    end
+                    if data.resources.massin.rate and line.massColumn then
+                        if showResourceStorage then
+                            line.massColumn:SetText(num.frmt(player.eco.massStored))
+                            line.engyColumn:SetText(num.frmt(player.eco.engyStored))
+                        else 
+                            line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
+                            line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                        end
+                    end
+                end
                
                -- update army's score
                if player.score == -1 then
@@ -2721,7 +2800,7 @@ function AnnounceDeath(losersID, text, winnerID)
 
         Announcement.CreateSmartAnnouncement(armyLine, sender, message, target)
         --PlaySound(Sound({Bank = 'Interface', Cue = 'UI_END_Game_Fail'}))        
-        PlayVoice(Sound({ Bank='XGG', Cue='XGG_Computer_CV01_05115' }))
+        --PlayVoice(Sound({ Bank='XGG', Cue='XGG_Computer_CV01_05115' }))
                  
     end
 end
